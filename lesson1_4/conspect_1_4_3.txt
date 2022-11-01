@@ -60,6 +60,7 @@ kubectl -n lesson14 delete -f service_clusterip.yaml
 
 Позволяет открыть внешний доступ и жестко привязать внешний IP адрес к Поду.
 Минус: количество IPv4 обычно сильно ограниченно.
+LoadBalancer работает только в облаке, либо с железным балансером типа metallb
 
 # Create file
 service_loadbancer.yaml
