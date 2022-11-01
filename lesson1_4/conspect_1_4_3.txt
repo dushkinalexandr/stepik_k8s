@@ -123,6 +123,8 @@ spec:
 
 # Deploy service_nodeport
 kubectl apply -f service_nodeport.yaml
+NAME                     TYPE       CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE
+nodeport-goapp-service   NodePort   10.98.64.118   <none>        80:30050/TCP   71s
 
 # Check
 kubectl -n lesson14 get svc
