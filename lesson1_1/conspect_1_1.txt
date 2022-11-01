@@ -1,0 +1,150 @@
+# наcтроить Docker
+# добавить пользователя в группу Docker, чтобы не выполнять команты через sudo
+https://docs.docker.com/engine/install/linux-postinstall/
+
+---
+# Lesson 1.1.1
+
+vim Dockerfile
+
+FROM python:3.6-alpine3.8                     # Скачиваем легковесный образ python-alpine
+COPY 1.py /app/                               # Копируем 1.py с компьютера в дирректорию /app образа
+WORKDIR /app                                  # Делаем /app рабочей дирректорией для след. команды
+ENTRYPOINT ["python3", "/app/1.py"]           # Говорим "Питон3, запусти приложение /app/1.py"
+
+
+# собрать контейнер
+docker build . -t py_app:v0.1
+
+# список образов
+docker images
+
+# запустить контейнер
+docker run py_app:v0.1
+
+
+# Lesson 1.1.3
+# Лучшие практики
+# MultiStage сборка образов - уменьшит итоговый размер образа
+# Минимизируйте количество слоев
+# Держите статичные слои как можно выше - реже изменяются, быстрее сборка,запуск
+https://docs.docker.com/develop/develop-images/dockerfile_best-practices/
+
+
+# MultiStage сборка образов
+# веб-сервис на Go
+# main.go
+
+package main
+
+import (
+    "fmt"
+    "log"
+    "net/http"
+)
+
+func handler(w http.ResponseWriter, r *http.Request) {
+    fmt.Fprintf(w, "Hi there, I love %s!", r.URL.Path[1:])
+}
+
+func main() {
+    http.HandleFunc("/", handler)
+    log.Fatal(http.ListenAndServe(":8080", nil))
+}
+
+
+# Dockerfile
+FROM golang:1.10 
+WORKDIR /app 
+COPY . .
+RUN go build -o main . 
+CMD ["/app/main"]
+
+docker build . -t go:v0.1
+
+# Dockerfile
+FROM golang:1.10 AS builder              # Создаем временный Докер-образ и называем его builder                    
+WORKDIR /app
+COPY . .
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o app . 
+# Компилируем приложение специально для дальнейшего запуска в Alpine
+
+
+FROM alpine:latest                       # Создаем финальный Докер-образ на базе легковесного alpine
+WORKDIR /root/
+COPY --from=builder ./app .              # Копируем собранное приложение из образа biulder
+EXPOSE 8080
+CMD ["./app"]
+
+docker build . -t go:v0.2
+
+# разница в размре итогового образа
+docker images go
+REPOSITORY   TAG       IMAGE ID       CREATED          SIZE
+go           v0.2      2425c0ab853d   24 seconds ago   12.1MB
+go           v0.1      17674dd2d4fe   2 minutes ago    767MB
+
+
+docker run -d -p 8080:8080 go:v0.2
+
+
+# Минимизируйте количество слоев
+Docker имеет луковую архитектуру, каждая команда RUN, COPY, ADD создает новый слой.
+
+Используйте && чтобы сократить количество слоев в подобных случаях: 
+
+RUN apt-get update
+RUN apt-get install ca-certificates
+RUN update-ca-certificates
+Вы можете заменить это на:
+
+RUN apt-get update && apt-get install ca-certificates && update-ca-certificates
+ 
+
+# Держите статичные слои как можно выше
+
+Docker имеет луковую архитектуру, и каждый слой накладывается на следующий. Слои создают команды FROM, RUN, COPY, и ADD
+
+Если вышестоящий слой изменяется, то нижележащие будут пересобираться (кэш на нижних работать не будет). Именно поэтому то, что меняется реже всего записывается в Dockerfile как можно выше.
+
+Вы сэкономите много времени при пересборках образов, если будете использовать данную рекомендацию.
+
+
+# Lesson 1.1.4
+# Docker Registry
+# хранилище обзразов
+#  Gitlab, Nexus, Harbor, DockerHub
+https://hub.docker.com/
+
+Заведите там аккаунт и создайте публичный репозиторий lesson1
+You can push a new image to this repository using the CLI
+docker tag local-image:tagname new-repo:tagname
+docker push new-repo:tagname
+Make sure to change tagname with your desired image repository tag.
+
+# login in dockerhub
+docker login
+Login with your Docker ID to push and pull images from Docker Hub. If you don't have a Docker ID, head over to https://hub.docker.com to create one.
+Username: ku22
+Password: 
+WARNING! Your password will be stored unencrypted in /home/ku/.docker/config.json.
+Configure a credential helper to remove this warning. See
+https://docs.docker.com/engine/reference/commandline/login/#credentials-store
+
+
+# Поставьте тэг в соответствии с именем репозитория:
+docker tag go:v0.2 ku22/lesson1:v0.2
+
+# Теперь запуште образ в хранилище:
+docker push ku22/lesson1:v0.2
+
+
+# образы хранятся на хосте
+/var/lib/docker/
+
+# About Docker
+https://habr.com/ru/company/ruvds/blog/439980/
+https://habr.com/ru/company/southbridge/blog/329138/
+https://docs.gitlab.com/ee/ci/docker/using_kaniko.html
+
+

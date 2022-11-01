@@ -1,0 +1,31 @@
+# namespaces - разграничение области видимости
+
+# Create ns
+# Imperative
+kubectl create ns lesson14
+
+
+# Declarative
+# Create file:
+namespace.yaml
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: lesson14
+  
+  
+# Примените данный манифест в Кубернетес
+kubectl apply -f namespace.yaml
+
+
+# Get list ns
+kubectl get ns
+kubectl get namespaces 
+
+
+# Delete ns
+kubectl delete namespaces lesson14
+kubectl delete -f namespace.yaml
+

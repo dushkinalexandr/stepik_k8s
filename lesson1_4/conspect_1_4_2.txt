@@ -1,0 +1,41 @@
+# Под - это минимальная единица для управления Кубером. 
+# Под - это сетевая абстракция, это один или несколько контейнеров, предназначенных для определённой задачи. 
+
+pod.yaml
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: static-web
+  namespace: lesson14
+  labels:
+    app: goweb
+spec:
+  containers:
+    - name: web
+      image: ku22/lesson1:v0.2  ## укажите здесь свой образ из предыдущих уроков в формате 
+                                ## image: <имя_пользователя>/<репозиторий>/<тег>
+      ports:
+        - name: web
+          containerPort: 8080
+          protocol: TCP
+          
+# Create pod in ns 
+kubectl apply -f pod.yaml
+
+# get pods
+kubectl -n lesson14 get pods
+
+# проброс порта из k8s в localhost
+# ключ -n означает неймспейс
+kubectl port-forward  -n lesson14 static-web 8080:8080
+
+# Check
+curl -I localhost:8080/kuber
+Hi there, I love kuber!
+
+HTTP/1.1 200 OK
+Date: Tue, 01 Nov 2022 20:00:43 GMT
+Content-Length: 23
+Content-Type: text/plain; charset=utf-8

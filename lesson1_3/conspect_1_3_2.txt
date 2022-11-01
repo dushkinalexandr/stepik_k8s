@@ -1,0 +1,69 @@
+# Императивный подход - указывать сделать, что мы хотим
+
+# создать ресурс
+kubectl create deployment first-deployment --image=ku22/lesson1:v0.2
+deployment.apps/first-deployment created
+
+
+
+# Декларативный подход - описать, что мы хотим и просить сделать
+
+# create file
+deployment.yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: declarative-deployment
+  labels:
+    app: go-web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: goapp
+  template:
+    metadata:
+      labels:
+        app: goapp
+    spec:
+      containers:
+      - name: goapp
+        image: ku22/lesson1:v0.2
+        ports:
+        - containerPort: 8080
+        
+        
+# apply file
+kubectl apply -f deployment.yaml
+
+# show resourses
+kubectl get deployments
+
+NAME                     READY   UP-TO-DATE   AVAILABLE   AGE
+declarative-deployment   0/1     1            0           11s
+first-deployment         1/1     1            1           19m
+
+
+kubectl get pod
+
+NAME                                     READY   STATUS    RESTARTS   AGE
+declarative-deployment-99758b578-gwdqr   1/1     Running   0          3s
+first-deployment-c76cb5d58-zzzhj         1/1     Running   0          20m
+
+
+
+# Edit - позволяет на лету поменять yaml-манифест запущенного ресурса - но делать так не надо
+
+# Edit the deployment 'mydeployment' in YAML and save the modified config in its annotation
+kubectl edit deployment/mydeployment -o yaml --save-config
+  
+# Edit the deployment/mydeployment's status subresource
+kubectl edit deployment mydeployment --subresource='status'
+  
+
+---
+Infrustructure as a Code
+Everything as a Code
+
+

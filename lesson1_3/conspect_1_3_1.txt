@@ -1,0 +1,115 @@
+# Установка k8s
+
+---
+kubectl - cli утилита для работы с кластером k8s
+развертывания приложений, проверки и управления ресурсов кластера, а также для просмотра логов
+Подробнее:
+https://kubernetes.io/docs/reference/kubectl/overview/
+
+
+# install kubctl
+https://kubernetes.io/ru/docs/tasks/tools/install-kubectl/
+
+curl -LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl
+
+chmod +x ./kubectl
+sudo mv ./kubectl /usr/local/bin/kubectl
+
+
+# check
+kubectl version --client
+
+
+##########################
+# Deb
+sudo apt-get update && sudo apt-get install -y apt-transport-https
+curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee -a /etc/apt/sources.list.d/kubernetes.list
+sudo apt-get update
+sudo apt-get install -y kubectl
+
+#########################
+# RHEL
+sudo cat <<EOF > /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+EOF
+sudo yum install -y kubectl
+
+
+---
+Minikube - это кластер из одной Ноды, который помогает в быстрых тестах идей и в обучении.
+https://kubernetes.io/ru/docs/tasks/tools/install-minikube/
+
+
+# Установка Minikube с помощью прямой ссылки
+curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 \
+  && chmod +x minikube
+
+# Чтобы исполняемый файл Minikube был доступен из любой директории
+sudo mkdir -p /usr/local/bin/
+sudo install minikube /usr/local/bin/
+
+
+# запустить 
+minikube start
+
+😄  minikube v1.27.1 на Ubuntu 20.04
+✨  Automatically selected the docker driver. Other choices: ssh, none, qemu2 (experimental)
+📌  Using Docker driver with root privileges
+👍  Запускается control plane узел minikube в кластере minikube
+🚜  Скачивается базовый образ ...
+💾  Скачивается Kubernetes v1.25.2 ...
+    > preloaded-images-k8s-v18-v1...:  385.41 MiB / 385.41 MiB  100.00% 7.05 Mi
+    > gcr.io/k8s-minikube/kicbase:  387.11 MiB / 387.11 MiB  100.00% 4.96 MiB p
+    > gcr.io/k8s-minikube/kicbase:  0 B [________________________] ?% ? p/s 47s
+🔥  Creating docker container (CPUs=2, Memory=9900MB) ...
+🐳  Подготавливается Kubernetes v1.25.2 на Docker 20.10.18 ...
+    ▪ Generating certificates and keys ...
+    ▪ Booting up control plane ...
+    ▪ Configuring RBAC rules ...
+🔎  Компоненты Kubernetes проверяются ...
+    ▪ Используется образ gcr.io/k8s-minikube/storage-provisioner:v5
+🌟  Включенные дополнения: storage-provisioner, default-storageclass
+💡  kubectl not found. If you need it, try: 'minikube kubectl -- get pods -A'
+🏄  Готово! kubectl настроен для использования кластера "minikube" и "default" пространства имён по умолчанию
+
+
+
+# проверить правильность установки
+minikube status
+
+minikube
+type: Control Plane
+host: Running
+kubelet: Running
+apiserver: Running
+kubeconfig: Configured
+
+
+# config profile
+minikube profile list
+|----------|-----------|---------|--------------|------|---------|---------|-------|--------|
+| Profile  | VM Driver | Runtime |      IP      | Port | Version | Status  | Nodes | Active |
+|----------|-----------|---------|--------------|------|---------|---------|-------|--------|
+| minikube | docker    | docker  | 192.168.49.2 | 8443 | v1.25.2 | Running |     1 | *      |
+|----------|-----------|---------|--------------|------|---------|---------|-------|--------|
+
+
+# остановить кластер
+minicube stop
+
+# Очистка локального состояния
+minicube delete
+
+
+
+
+
+
+
