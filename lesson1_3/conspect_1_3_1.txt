@@ -58,6 +58,11 @@ sudo install minikube /usr/local/bin/
 
 # запустить 
 minikube start
+minikube start —vm-driver=none
+
+# minikube start можно выбирать бэкенд для запуска через —vm-driver 
+# —vm-driver=none, чтоб оно на хосте запускалось. 
+# —vm-driver=dosker - с бэком докера я выгребла проблемы с сетью на тестовом задании
 
 😄  minikube v1.27.1 на Ubuntu 20.04
 ✨  Automatically selected the docker driver. Other choices: ssh, none, qemu2 (experimental)

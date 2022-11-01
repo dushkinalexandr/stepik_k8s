@@ -54,6 +54,7 @@ first-deployment-c76cb5d58-zzzhj         1/1     Running   0          20m
 
 
 # Edit - позволяет на лету поменять yaml-манифест запущенного ресурса - но делать так не надо
+# менять позволяет не многое, не сохранит изменения
 
 # Edit the deployment 'mydeployment' in YAML and save the modified config in its annotation
 kubectl edit deployment/mydeployment -o yaml --save-config
