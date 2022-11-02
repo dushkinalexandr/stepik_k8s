@@ -1,0 +1,133 @@
+# Service
+
+Сами по себе Поды в Кубернетес не имеют сети, поэтому в прошлом шаге, чтобы обратиться к Поду, нам пришлось пробросить порты. 
+
+Ресурс Service позволяет подам обращаться к другим приложениям и другим приложениям к Подам. 
+Также, с помощью сервиса поды могут общаться друг с другом, даже если они в разных неймспейсах.
+
+Service Type:
+- ClusterIP (default)
+- LoadBalancer
+- NodePort
+
+###############################
+
+# ClusterIP
+
+# Create file
+service_clusterip.yaml
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: lesson14
+  name: my-service
+spec:
+  selector:
+    app: goweb
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+
+
+На прошлом шаге мы поставили Поду в неймспейсе lesson14 метку app=goweb. 
+Service найдет этот Под как раз по этой метке, так как она у него указана в Селекторе. 
+Сервис позволяет прокидывать любой порт на любой.
+
+
+# Deploy Service
+kubectl apply -f service.yaml
+
+# Check service_clusterip
+kubectl -n lesson14 get svc
+NAME         TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
+my-service   ClusterIP   10.103.67.175   <none>        80/TCP    18s
+
+Из-за особенностей minikube вы не сможете обратиться к приложению по внешнему IP, но в обычных Kubernetes кластерах такая возможность есть.
+
+Service Type ClusterIP ставить по-умолчанию.
+Недостаток этого сервиса в том, что выбор этого сервиса делает Под доступным только изнутри кластера.
+
+# Delete service
+kubectl -n lesson14 delete -f service_clusterip.yaml
+
+
+###############################
+
+# LoadBalancer
+
+Позволяет открыть внешний доступ и жестко привязать внешний IP адрес к Поду.
+Минус: количество IPv4 обычно сильно ограниченно.
+LoadBalancer работает только в облаке, либо с железным балансером типа metallb
+
+# Create file
+service_loadbancer.yaml
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-balancer
+  namespace: lesson14
+spec:
+  ports:
+  - port: 80
+    name: webport
+    targetPort: 8080
+  selector:
+    app: goweb
+  type: LoadBalancer
+  loadBalancerIP: 10.10.130.145
+
+
+# Deploy service_loadbancer
+kubectl apply -f service_loadbalancer.yaml
+
+# Check
+kubectl -n lesson14 get svc
+NAME          TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
+my-balancer   LoadBalancer   10.101.48.154   <pending>     80:30632/TCP   14s
+
+# Delete service
+kubectl -n lesson14 delete -f service_loadbalancer.yaml
+
+
+###############################
+
+# NodePort
+
+Открывает на всех Нодах кластера порт, запросы попадающие на этот порт будут перенаправлены в Ваш Под.
+Но, порты доступны в интервале 30000–32767.
+
+# Create service NodePort
+
+---
+apiVersion: v1
+kind: Service
+metadata: 
+ name: nodeport-goapp-service
+ namespace: lesson14
+spec:
+ type: NodePort
+ selector:   
+  app: goapp
+ ports: 
+ - name: http
+   port: 80
+   targetPort: 8080
+   nodePort: 30050
+   protocol: TCP
+
+
+# Deploy service_nodeport
+kubectl apply -f service_nodeport.yaml
+NAME                     TYPE       CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE
+nodeport-goapp-service   NodePort   10.98.64.118   <none>        80:30050/TCP   71s
+
+# Check
+kubectl -n lesson14 get svc
+
+# Delete service
+kubectl -n lesson14 delete -f service_nodeport.yaml
